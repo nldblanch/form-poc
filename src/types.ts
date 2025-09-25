@@ -11,7 +11,7 @@ export interface Dependency {
 export interface FormQuestion {
     id: string;
     question: string;
-    type: 'single' | 'multiselect';
+    type: 'single' | 'multiselect' | 'text' | 'textarea';
     options: Option[];
     required: boolean;
     dependsOn?: Dependency;

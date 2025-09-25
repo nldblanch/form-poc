@@ -1,9 +1,11 @@
-import React, { useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useMemo, memo } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import styled from 'styled-components';
 import type { FormQuestion, FormData } from '../types';
 import SingleSelect from './SingleSelect';
 import MultiSelect from './MultiSelect';
+import TextInput from './TextInput';
+import TextArea from './TextArea';
 
 interface FormProps {
   questions: FormQuestion[];
@@ -28,13 +30,13 @@ const Form = styled.form`
   gap: 2rem;
 `;
 
-const QuestionContainer = styled.div<{ $disabled: boolean }>`
-  background: ${props => props.$disabled ? '#f1f3f4' : '#f8f9fa'};
-  border: 1px solid ${props => props.$disabled ? '#dee2e6' : '#e9ecef'};
+const QuestionContainer = styled.div<{ $hidden: boolean }>`
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 1.5rem;
   transition: all 0.3s ease;
-  opacity: ${props => props.$disabled ? 0.6 : 1};
+  display: ${props => props.$hidden ? 'none' : 'block'};
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -95,29 +97,10 @@ const SubmitButton = styled.button`
 `;
 
 const FormComponent: React.FC<FormProps> = ({ questions }) => {
-  const { control, watch, handleSubmit } = useForm<FormData>();
-  const watchedValues = watch();
-
-  // Check if a question should be enabled based on dependencies
-  const isQuestionEnabled = useCallback((question: FormQuestion): boolean => {
-    if (!question.dependsOn) return true;
-
-    const dependencyValue = watchedValues[question.dependsOn.id];
-    return dependencyValue === question.dependsOn.value;
-  }, [watchedValues]);
+  const { control, handleSubmit } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {
-    // Filter out disabled questions from the submitted data
-    const filteredData: FormData = {};
-
-    questions.forEach((question) => {
-      const isEnabled = isQuestionEnabled(question);
-      if (isEnabled && data[question.id] !== undefined) {
-        filteredData[question.id] = data[question.id];
-      }
-    });
-
-    console.log('Form submitted:', filteredData);
+    console.log('Form submitted:', data);
     alert('Form submitted successfully! Check console for data.');
   };
 
@@ -125,43 +108,13 @@ const FormComponent: React.FC<FormProps> = ({ questions }) => {
     <FormContainer>
       <Title>Dynamic Form with Conditional Questions</Title>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        {questions.map((question) => {
-          const isEnabled = isQuestionEnabled(question);
-
-          return (
-            <QuestionContainer key={question.id} $disabled={!isEnabled}>
-              <QuestionTitle>
-                {question.question}
-                {question.required && <Required>*</Required>}
-              </QuestionTitle>
-
-              {question.type === 'single' ? (
-                <SingleSelect
-                  name={question.id}
-                  control={control}
-                  options={question.options}
-                  disabled={!isEnabled}
-                  required={question.required}
-                />
-              ) : (
-                <MultiSelect
-                  name={question.id}
-                  control={control}
-                  options={question.options}
-                  disabled={!isEnabled}
-                  required={question.required}
-                />
-              )}
-
-              {!isEnabled && question.dependsOn && (
-                <DependencyNote>
-                  This question will be enabled when you select "{question.dependsOn.value}" in Question 2.
-                </DependencyNote>
-              )}
-            </QuestionContainer>
-          );
-        })}
-
+        {questions.map((question) => (
+          <QuestionWrapper
+            key={question.id}
+            question={question}
+            control={control}
+          />
+        ))}
         <SubmitButton type="submit">
           Submit Form
         </SubmitButton>
@@ -169,5 +122,68 @@ const FormComponent: React.FC<FormProps> = ({ questions }) => {
     </FormContainer>
   );
 };
+
+// Optimized individual question component that hides instead of disables
+const QuestionWrapper = memo<{
+  question: FormQuestion;
+  control: any;
+}>(({ question, control }) => {
+  // Only watch the specific dependency field if this question has one
+  const dependencyValue = question.dependsOn
+    ? useWatch({ control, name: question.dependsOn.id })
+    : null;
+
+  const isVisible = useMemo(() => {
+    if (!question.dependsOn) return true;
+    return dependencyValue === question.dependsOn.value;
+  }, [question.dependsOn, dependencyValue]);
+
+  return (
+    <QuestionContainer $hidden={!isVisible}>
+      <QuestionTitle>
+        {question.question}
+        {question.required && <Required>*</Required>}
+      </QuestionTitle>
+
+      {question.type === 'single' ? (
+        <SingleSelect
+          name={question.id}
+          control={control}
+          options={question.options}
+          disabled={false} // Never disable - just hide
+          required={question.required}
+        />
+      ) : question.type === 'multiselect' ? (
+        <MultiSelect
+          name={question.id}
+          control={control}
+          options={question.options}
+          disabled={false} // Never disable - just hide
+          required={question.required}
+        />
+      ) : question.type === 'text' ? (
+        <TextInput
+          name={question.id}
+          control={control}
+          disabled={false} // Never disable - just hide
+          required={question.required}
+        />
+      ) : (
+        <TextArea
+          name={question.id}
+          control={control}
+          disabled={false} // Never disable - just hide
+          required={question.required}
+        />
+      )}
+
+      {!isVisible && question.dependsOn && (
+        <DependencyNote>
+          This question will be shown when you select "{question.dependsOn.value}" in the previous question.
+        </DependencyNote>
+      )}
+    </QuestionContainer>
+  );
+});
 
 export default FormComponent;
