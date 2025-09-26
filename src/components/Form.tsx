@@ -97,17 +97,22 @@ const SubmitButton = styled.button`
 `;
 
 const FormComponent: React.FC<FormProps> = ({ questions }) => {
-  const { control, handleSubmit } = useForm<FormData>();
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {
     console.log('Form submitted:', data);
     alert('Form submitted successfully! Check console for data.');
   };
 
+  const onError = (errors: any) => {
+    console.log('Form validation errors:', errors);
+    alert('Form has validation errors. Check console for details.');
+  };
+
   return (
     <FormContainer>
       <Title>Dynamic Form with Conditional Questions</Title>
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form onSubmit={handleSubmit(onSubmit, onError)}>
         {questions.map((question) => (
           <QuestionWrapper
             key={question.id}
@@ -172,7 +177,7 @@ const QuestionWrapper = memo<{
     <QuestionContainer $hidden={!isVisible}>
       <QuestionTitle>
         {question.question}
-        {question.required && <Required>*</Required>}
+        {question.required && isVisible && <Required>*</Required>}
       </QuestionTitle>
 
       {question.type === 'single' ? (
@@ -181,7 +186,7 @@ const QuestionWrapper = memo<{
           control={control}
           options={question.options}
           disabled={false} // Never disable - just hide
-          required={question.required}
+          required={question.required && isVisible}
         />
       ) : question.type === 'multiselect' ? (
         <MultiSelect
@@ -189,21 +194,21 @@ const QuestionWrapper = memo<{
           control={control}
           options={question.options}
           disabled={false} // Never disable - just hide
-          required={question.required}
+          required={question.required && isVisible}
         />
       ) : question.type === 'text' ? (
         <TextInput
           name={question.id}
           control={control}
           disabled={false} // Never disable - just hide
-          required={question.required}
+          required={question.required && isVisible}
         />
       ) : (
         <TextArea
           name={question.id}
           control={control}
           disabled={false} // Never disable - just hide
-          required={question.required}
+          required={question.required && isVisible}
         />
       )}
 
