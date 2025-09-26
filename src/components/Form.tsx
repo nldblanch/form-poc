@@ -6,6 +6,7 @@ import SingleSelect from './SingleSelect';
 import MultiSelect from './MultiSelect';
 import TextInput from './TextInput';
 import TextArea from './TextArea';
+import { DatabaseService } from '../services/database';
 
 interface FormProps {
   questions: FormQuestion[];
@@ -99,9 +100,18 @@ const SubmitButton = styled.button`
 const FormComponent: React.FC<FormProps> = ({ questions }) => {
   const { control, handleSubmit } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
-    console.log('Form submitted:', data);
-    alert('Form submitted successfully! Check console for data.');
+  const onSubmit = async (data: FormData) => {
+    try {
+      console.log('Form submitted:', data);
+
+      // Save answers to database
+      await DatabaseService.saveAnswers(data);
+
+      alert('Form submitted successfully! Data saved to database.');
+    } catch (error) {
+      console.error('Failed to save form data:', error);
+      alert('Failed to save form data. Please try again.');
+    }
   };
 
   const onError = (errors: any) => {
