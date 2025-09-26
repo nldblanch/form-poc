@@ -97,7 +97,7 @@ const SubmitButton = styled.button`
 `;
 
 const FormComponent: React.FC<FormProps> = ({ questions }) => {
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const { control, handleSubmit } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {
     console.log('Form submitted:', data);
