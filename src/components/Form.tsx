@@ -121,7 +121,7 @@ const FormComponent: React.FC<FormProps> = ({ questions }) => {
 
   return (
     <FormContainer>
-      <Title>Dynamic Form with Conditional Questions</Title>
+      <Title>Youth For Christ Form PoC</Title>
       <Form onSubmit={handleSubmit(onSubmit, onError)}>
         {questions.map((question) => (
           <QuestionWrapper
