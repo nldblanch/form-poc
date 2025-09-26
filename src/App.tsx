@@ -1,6 +1,6 @@
 
 import Form from './components/Form';
-import { formQuestions } from './questions_clean';
+import { formQuestions } from './questions';
 
 function App() {
   return <Form questions={formQuestions} />;

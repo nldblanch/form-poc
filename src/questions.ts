@@ -143,10 +143,13 @@ export const formQuestions: FormQuestion[] = [
             'Other'
         ]),
         required: true,
-        dependsOn: {
+        dependsOn: [{
             id: 'engaging_youth_work',
             value: 'yes',
-        },
+        }, {
+            id: 'want_youth_work',
+            value: 'yes',
+        }],
     },
     {
         id: 'greatest_needs',
@@ -171,10 +174,13 @@ export const formQuestions: FormQuestion[] = [
             'Poor mental health'
         ]),
         required: true,
-        dependsOn: {
+        dependsOn: [{
             id: 'engaging_youth_work',
             value: 'yes',
-        },
+        }, {
+            id: 'want_youth_work',
+            value: 'yes',
+        }]
     },
 
     // Youth Worker Information
@@ -212,10 +218,13 @@ export const formQuestions: FormQuestion[] = [
             'We do not have a youth worker'
         ]),
         required: true,
-        dependsOn: {
+        dependsOn: [{
             id: 'lead_youth_worker',
             value: 'yes',
-        },
+        }, {
+            id: 'lead_youth_worker',
+            value: 'no',
+        }]
     },
 
     // Team and Numbers
@@ -867,10 +876,7 @@ export const formQuestions: FormQuestion[] = [
         type: 'single',
         options: createOptions(['Yes', 'No']),
         required: true,
-        dependsOn: {
-            id: 'engaging_youth_work',
-            value: 'yes',
-        },
+
     },
     {
         id: 'no_wf_yfc_reasons',
@@ -890,35 +896,13 @@ export const formQuestions: FormQuestion[] = [
         },
     },
     {
-        id: 'wf_yfc_challenges',
-        question: 'Have you faced, or are you aware of any challenges in partnering with Waltham Forest Youth for Christ?',
-        type: 'single',
-        options: createOptions(['Yes', 'No']),
-        required: true,
-        dependsOn: {
-            id: 'engaging_youth_work',
-            value: 'yes',
-        },
-    },
-    {
-        id: 'wf_yfc_challenge_details',
-        question: 'What are the challenges that you have faced, or perceived, whilst working with Waltham Forest Youth for Christ?',
-        type: 'textarea',
-        options: [],
-        required: true,
-        dependsOn: {
-            id: 'wf_yfc_challenges',
-            value: 'yes',
-        },
-    },
-    {
         id: 'wf_yfc_impact',
         question: 'Has Waltham Forest Youth for Christ impacted the ways in which you do or think about youth outreach?',
         type: 'single',
         options: createOptions(['Yes', 'No']),
         required: true,
         dependsOn: {
-            id: 'engaging_youth_work',
+            id: 'wf_yfc_engagement',
             value: 'yes',
         },
     },
@@ -947,6 +931,25 @@ export const formQuestions: FormQuestion[] = [
         },
     },
     {
+        id: 'wf_yfc_challenges',
+        question: 'Have you faced, or are you aware of any challenges in partnering with Waltham Forest Youth for Christ?',
+        type: 'single',
+        options: createOptions(['Yes', 'No']),
+        required: true,
+
+    },
+    {
+        id: 'wf_yfc_challenge_details',
+        question: 'What are the challenges that you have faced, or perceived, whilst working with Waltham Forest Youth for Christ?',
+        type: 'textarea',
+        options: [],
+        required: true,
+        dependsOn: {
+            id: 'wf_yfc_challenges',
+            value: 'yes',
+        },
+    },
+    {
         id: 'wf_yfc_future_interest',
         question: 'Would you be open to knowing more about Waltham Forest Youth for Christ in the following ways? By selecting these boxes you are consenting for us to contact you about these topics:',
         type: 'multiselect',
@@ -964,10 +967,6 @@ export const formQuestions: FormQuestion[] = [
             'Other'
         ]),
         required: true,
-        dependsOn: {
-            id: 'engaging_youth_work',
-            value: 'yes',
-        },
     },
 
     // Final Comments

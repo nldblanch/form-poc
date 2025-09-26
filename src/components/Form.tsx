@@ -123,20 +123,50 @@ const FormComponent: React.FC<FormProps> = ({ questions }) => {
   );
 };
 
-// Optimized individual question component that hides instead of disables
 const QuestionWrapper = memo<{
   question: FormQuestion;
   control: any;
 }>(({ question, control }) => {
-  // Only watch the specific dependency field if this question has one
-  const dependencyValue = question.dependsOn
-    ? useWatch({ control, name: question.dependsOn.id })
-    : null;
+  const getDependencyFields = useMemo(() => {
+    if (!question.dependsOn) return [];
+
+    if (Array.isArray(question.dependsOn)) {
+      return question.dependsOn.map(dep => dep.id);
+    } else {
+      return [question.dependsOn.id];
+    }
+  }, [question.dependsOn]);
+
+  // Use a selector to watch only the fields we need
+  const dependencyValues = useWatch({
+    control,
+    name: getDependencyFields as readonly string[],
+    exact: false
+  });
+
+
 
   const isVisible = useMemo(() => {
     if (!question.dependsOn) return true;
-    return dependencyValue === question.dependsOn.value;
-  }, [question.dependsOn, dependencyValue]);
+
+    const valuesArray: any[] = Array.isArray(dependencyValues)
+      ? (dependencyValues as any[])
+      : getDependencyFields.length === 1
+        ? [dependencyValues]
+        : [];
+
+    if (Array.isArray(question.dependsOn)) {
+      return question.dependsOn.every(dep => {
+        const idx = getDependencyFields.indexOf(dep.id);
+        const depValue = idx >= 0 ? valuesArray[idx] : undefined;
+        return depValue === dep.value;
+      });
+    } else {
+      const idx = getDependencyFields.indexOf(question.dependsOn.id);
+      const depValue = idx >= 0 ? valuesArray[idx] : undefined;
+      return depValue === question.dependsOn.value;
+    }
+  }, [question.dependsOn, dependencyValues, getDependencyFields]);
 
   return (
     <QuestionContainer $hidden={!isVisible}>
@@ -179,7 +209,11 @@ const QuestionWrapper = memo<{
 
       {!isVisible && question.dependsOn && (
         <DependencyNote>
-          This question will be shown when you select "{question.dependsOn.value}" in the previous question.
+          {Array.isArray(question.dependsOn) ? (
+            <>This question will be shown when you select the required values in the dependency questions.</>
+          ) : (
+            <>This question will be shown when you select "{question.dependsOn.value}" in the previous question.</>
+          )}
         </DependencyNote>
       )}
     </QuestionContainer>
