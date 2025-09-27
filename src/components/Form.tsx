@@ -164,7 +164,10 @@ const FormComponent: React.FC<FormProps> = ({ questions }) => {
     process.env.NODE_ENV === 'development' && console.log('Form validation errors:', errors);
     alert('Form has validation errors. Check console for details.');
   };
-  if (isSubmitted) return <Title>Thanks you for taking the time to complete this survey!</Title>
+  if (isSubmitted) return <FormContainer>
+    <Title>Thanks you for taking the time to complete this survey!</Title>
+  </FormContainer>
+
   return (
     <FormContainer>
       {isSubmitting && <LoadingOverlay />}
