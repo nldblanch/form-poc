@@ -1,4 +1,4 @@
-import React, { useMemo, memo } from 'react';
+import React, { useMemo, memo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import styled from 'styled-components';
 import type { FormQuestion, FormData } from '../types';
@@ -15,8 +15,6 @@ interface FormProps {
 const FormContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
 `;
 
 const Title = styled.h1`
@@ -95,34 +93,83 @@ const SubmitButton = styled.button`
     outline: 2px solid #28a745;
     outline-offset: 2px;
   }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
+const LoadingOverlay = styled.div`
+position: absolute;
+z-index: 1000;
+height: 100vh;
+top:0;
+left:0;
+opacity: 50%;
+width: 100%;
+background-color: black;
+`
 
 const FormComponent: React.FC<FormProps> = ({ questions }) => {
-  const { control, handleSubmit } = useForm<FormData>();
+  const { control, handleSubmit, formState, reset, getValues } = useForm<FormData>();
+  const { isSubmitting } = formState
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
+  const isQuestionVisible = (question: FormQuestion, currentValues: FormData): boolean => {
+    if (!question.dependsOn) return true;
+
+    const getDependencyFields = Array.isArray(question.dependsOn)
+      ? question.dependsOn.map(dep => dep.id)
+      : [question.dependsOn.id];
+
+    const valuesArray: any[] = getDependencyFields.map(fieldId => currentValues[fieldId]);
+
+    if (Array.isArray(question.dependsOn)) {
+      return question.dependsOn.every(dep => {
+        const idx = getDependencyFields.indexOf(dep.id);
+        const depValue = idx >= 0 ? valuesArray[idx] : undefined;
+        return depValue === dep.value;
+      });
+    } else {
+      const idx = getDependencyFields.indexOf(question.dependsOn.id);
+      const depValue = idx >= 0 ? valuesArray[idx] : undefined;
+      return depValue === question.dependsOn.value;
+    }
+  };
   const onSubmit = async (data: FormData) => {
     try {
-      console.log('Form submitted:', data);
+      const currentValues = getValues();
 
-      // Save answers to database
-      await DatabaseService.saveAnswers(data);
+      // Create cleaned data by setting hidden question values to undefined
+      const cleanedData = { ...data };
 
-      alert('Form submitted successfully! Data saved to database.');
+      questions.forEach(question => {
+        if (!isQuestionVisible(question, currentValues)) {
+          cleanedData[question.id] = undefined as any;
+        }
+      });
+      process.env.NODE_ENV === 'development' && console.log('Form submitted:', cleanedData);
+
+      await DatabaseService.saveAnswers(cleanedData);
+
+      reset();
+      setIsSubmitted(true)
     } catch (error) {
-      console.error('Failed to save form data:', error);
+      setIsSubmitted(false)
+      process.env.NODE_ENV === 'development' && console.error('Failed to save form data:', error);
       alert('Failed to save form data. Please try again.');
     }
   };
 
   const onError = (errors: any) => {
-    console.log('Form validation errors:', errors);
+    process.env.NODE_ENV === 'development' && console.log('Form validation errors:', errors);
     alert('Form has validation errors. Check console for details.');
   };
-
+  if (isSubmitted) return <Title>Thanks you for taking the time to complete this survey!</Title>
   return (
     <FormContainer>
-      <Title>Youth For Christ Form PoC</Title>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
+      {isSubmitting && <LoadingOverlay />}
+      <Title>Waltham Forest: Youth ministry and outreach</Title>
+      <Form onSubmit={handleSubmit(onSubmit, onError)} key={isSubmitted ? 'submitted' : 'active'}>
         {questions.map((question) => (
           <QuestionWrapper
             key={question.id}
@@ -130,7 +177,7 @@ const FormComponent: React.FC<FormProps> = ({ questions }) => {
             control={control}
           />
         ))}
-        <SubmitButton type="submit">
+        <SubmitButton type="submit" disabled={isSubmitting || isSubmitted}>
           Submit Form
         </SubmitButton>
       </Form>

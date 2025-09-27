@@ -577,7 +577,7 @@ export const formQuestions: FormQuestion[] = [
     {
         id: 'youth_work_challenges',
         question: 'What is the greatest challenge that you face in your youth work?',
-        type: 'multiselect',
+        type: 'single',
         options: createOptions([
             'Behaviour issues of youth',
             'Young people with additional needs',
@@ -777,7 +777,7 @@ export const formQuestions: FormQuestion[] = [
     {
         id: 'training_types',
         question: 'Which training do you engage with?',
-        type: 'single',
+        type: 'multiselect',
         options: createOptions([
             'Regional network training',
             'Scripture Union',
