@@ -7,6 +7,7 @@ import MultiSelect from './MultiSelect';
 import TextInput from './TextInput';
 import TextArea from './TextArea';
 import { DatabaseService } from '../services/database';
+import Checkbox from './Checkbox';
 
 interface FormProps {
   questions: FormQuestion[];
@@ -258,6 +259,13 @@ const QuestionWrapper = memo<{
         />
       ) : question.type === 'text' ? (
         <TextInput
+          name={question.id}
+          control={control}
+          disabled={false} // Never disable - just hide
+          required={question.required && isVisible}
+        />
+      ) : question.type === 'checkbox' ? (
+        <Checkbox
           name={question.id}
           control={control}
           disabled={false} // Never disable - just hide

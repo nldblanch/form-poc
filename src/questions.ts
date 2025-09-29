@@ -977,4 +977,18 @@ export const formQuestions: FormQuestion[] = [
         options: [],
         required: false,
     },
+    {
+        id: 'consent',
+        question: 'By submitting this form, you agree to your data being used anonymously for research purposes.',
+        type: 'checkbox',
+        options: [],
+        required: true,
+    },
+    {
+        id: 'follow_up_conversation',
+        question: 'I would be happy for Waltham Forest to contact me and have a follow up conversation abuot youthwork.',
+        type: 'checkbox',
+        options: [],
+        required: false,
+    }
 ];
